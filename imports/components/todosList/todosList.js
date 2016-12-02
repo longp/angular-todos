@@ -8,29 +8,34 @@ class TodosListCtrl {
   constructor($scope) {
     $scope.viewModel(this);
 
+    this.hideCompleted = false;
+
     this.helpers({
       tasks() {
+        const selector = {};
+
+        // If hide completed is checked, filter tasks
+        if (this.getReactively('hideCompleted')) {
+          selector.checked = {
+            $ne: true
+          };
+        }
+
         // Show newest tasks at the top
-        return Tasks.find({}, {
+        return Tasks.find(selector, {
           sort: {
             createdAt: -1
           }
         });
+      },
+      incompleteCount() {
+        return Tasks.find({
+          checked: {
+            $ne: true
+          }
+        }).count();
       }
     })
-  }
-  
-  removeTask(task) {
-    Tasks.remove(task._id)
-  }
-
-  setChecked(task) {
-    // Set the checked property to the opposite of its current value
-    Tasks.update(task._id, {
-      $set: {
-        checked: !task.checked
-      },
-    });
   }
 
   addTask(newTask) {
@@ -42,6 +47,19 @@ class TodosListCtrl {
 
     // Clear form
     this.newTask = '';
+  }
+
+  setChecked(task) {
+    // Set the checked property to the opposite of its current value
+    Tasks.update(task._id, {
+      $set: {
+        checked: !task.checked
+      },
+    });
+  }
+
+  removeTask(task) {
+    Tasks.remove(task._id);
   }
 }
 
